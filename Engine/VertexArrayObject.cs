@@ -32,11 +32,8 @@ public class VertexArrayObject : IDisposable
     {
         if (_isDisposed) return;
 
-        if (dispose)
-        {
-            GL.BindVertexArray(0);
-            GL.DeleteVertexArray(Handle);
-        }
+        GL.BindVertexArray(0);
+        GL.DeleteVertexArray(Handle);
 
         _isDisposed = true;
     }

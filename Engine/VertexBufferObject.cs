@@ -31,7 +31,7 @@ public class VertexBufferObject : IDisposable
     {
         if (_isDisposed) return;
 
-        if (disposing) GL.DeleteBuffer(Handle);
+        GL.DeleteBuffer(Handle);
 
         _isDisposed = true;
     }

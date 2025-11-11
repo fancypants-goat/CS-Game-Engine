@@ -9,6 +9,8 @@ namespace Engine;
 
 internal class Window : GameWindow
 {
+    // TODO create ECS
+    // TODO create camera component
     private Shader shader;
     private Texture texture;
     private VertexArrayObject vao;
