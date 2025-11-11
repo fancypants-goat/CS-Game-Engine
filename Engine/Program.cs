@@ -15,6 +15,8 @@ public class Window : GameWindow
     private Shader shader;
     private Texture texture;
     private Entity cube;
+    private Entity cameraEntity;
+    private Camera camera;
 
     public Window(int width, int height, string title)
         : base(GameWindowSettings.Default, new NativeWindowSettings
@@ -31,6 +33,9 @@ public class Window : GameWindow
 
         GL.ClearColor(0.4f, 0.2f, 0.5f, 1.0f);
 
+        GL.Enable(EnableCap.DepthTest);
+        GL.DepthFunc(DepthFunction.Less);
+
         shader = new Shader(Resources.GetPath("Shaders/shader.vert"), Resources.GetPath("Shaders/shader.frag"));
         shader.Use();
         shader.Uniform3f("color", 1,1,1);
@@ -38,9 +43,16 @@ public class Window : GameWindow
         texture = new Texture(Resources.GetPath("Textures/wall.jpg"), true);
 
         cube = new Entity();
-        cube.transform.Position = new Vector3(-.5f, .5f, 0);
+        // cube.transform.Position = new Vector3(-.5f, .5f, 0);
         var r = new Renderer(cube, shader, texture);
         cube.AddComponent(r);
+
+        cameraEntity = new Entity();
+        camera = new Camera(cameraEntity, Camera.CameraType.Perspective, 0.1f, 100f, 90f);
+        cameraEntity.AddComponent(camera);
+        cameraEntity.Transform.Position = new Vector3(0, 0, -5);
+        camera.SetViewportSize(ClientSize.X, ClientSize.Y);
+        camera.Update();
     }
 
 
@@ -48,7 +60,33 @@ public class Window : GameWindow
     {
         base.OnUpdateFrame(args);
 
-        if (KeyboardState.IsKeyDown(Keys.Escape)) Close();
+        if (KeyboardState.IsKeyDown(Keys.Escape))
+        {
+            Debug.LogPrefixed(Debug.LogType.Exit, "Exiting Due to Escape Press");
+            Close();
+        }
+
+        float speed = 3;
+        if (KeyboardState.IsKeyDown(Keys.W))
+            camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Forwards);
+        if (KeyboardState.IsKeyDown(Keys.S))
+            camera.Transform.Translate(speed * (float)args.Time, -camera.Transform.Forwards);
+        if (KeyboardState.IsKeyDown(Keys.D))
+            camera.Transform.Translate(speed * (float)args.Time, -camera.Transform.Right);
+        if (KeyboardState.IsKeyDown(Keys.A))
+            camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Right);
+        if (KeyboardState.IsKeyDown(Keys.Space))
+            camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Up);
+        if (KeyboardState.IsKeyDown(Keys.LeftShift))
+            camera.Transform.Translate(speed * (float)args.Time, -camera.Transform.Up);
+
+        camera.Update();
+        
+
+        var x = (float)(args.Time * 300);
+        var y = (float)(Math.Sqrt(args.Time) * 2f);
+        var z = (float)(Math.Sin(args.Time)*1);
+        cube.Transform.Rotate(x, y, z);
     }
 
 
@@ -56,9 +94,9 @@ public class Window : GameWindow
     {
         base.OnRenderFrame(args);
 
-        GL.Clear(ClearBufferMask.ColorBufferBit);
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         
-        cube.GetComponent<Renderer>()?.Draw();
+        cube.GetComponent<Renderer>()?.Draw(camera);
 
         SwapBuffers();
     }
@@ -69,6 +107,8 @@ public class Window : GameWindow
         base.OnFramebufferResize(e);
 
         GL.Viewport(0, 0, e.Width, e.Height);
+        
+        camera.SetViewportSize(e.Width, e.Height);
     }
 
 

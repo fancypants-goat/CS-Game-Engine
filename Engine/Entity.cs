@@ -4,9 +4,9 @@ namespace Engine;
 
 public class Entity : IDisposable
 {
-    public bool isActive = true;
+    public bool IsActive = true;
 
-    public Transform transform;
+    public Transform Transform;
 
     protected List<Component> _components;
 
@@ -14,8 +14,8 @@ public class Entity : IDisposable
 
     public Entity()
     {
-        transform = new Transform(this);
-        _components = [transform];
+        Transform = new Transform(this);
+        _components = [Transform];
     }
 
 
@@ -27,7 +27,7 @@ public class Entity : IDisposable
 
     public virtual void Update()
     {
-        if (!isActive) return;
+        if (!IsActive) return;
         
         foreach (var c in _components)
             c.Update();

@@ -93,11 +93,12 @@ public class Renderer : Component, IDrawable
 	    Vao.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, stride, 5 * sizeof(float));
     }
 
-    public void Draw()
+    public void Draw(Camera camera)
     {
 	    Vao.Use();
 	    Shader.Use();
-	    Shader.UniformMat4("model", false, transform.ModelMatrix);
+	    Shader.UniformMat4("model", false, Transform.ModelMatrix);
+	    Shader.UniformMat4("camera", false, camera.View * camera.Projection);
 	    Texture?.Use();
 	    
 	    if (Ebo != null)
@@ -114,6 +115,7 @@ public class Renderer : Component, IDrawable
 
 	    if (disposing)
 	    {
+		    GL.BindVertexArray(0);
 		    Vao.Dispose();
 		    Vbo.Dispose();
 		    Ebo?.Dispose();

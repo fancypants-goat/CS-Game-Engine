@@ -3,15 +3,15 @@
 
 public class Component : IDisposable
 {
-    public Entity parent;
-    public Transform transform { get; }
+    public Entity Parent;
+    public Transform Transform { get; }
 
     protected bool _isDisposed;
 
     public Component(Entity parent)
     {
-        this.parent = parent;
-        transform = parent.transform;
+        this.Parent = parent;
+        Transform = parent.Transform;
     }
     
     
@@ -26,7 +26,7 @@ public class Component : IDisposable
 
     public virtual void Unload()
     {
-        parent.RemoveComponent(this);
+        Parent.RemoveComponent(this);
     }
 
     protected virtual void Dispose(bool disposing)

@@ -7,10 +7,11 @@ out vec2 texCoord;
 out vec3 normal;
 
 uniform mat4 model;
+uniform mat4 camera;
 
 void main()
 {
-    gl_Position = model * vec4(aPosition, 1);
+    gl_Position = camera * model * vec4(aPosition, 1);
     texCoord = aTexCoord;
     normal = aNormal;
 }
