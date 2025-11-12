@@ -5,6 +5,8 @@ namespace Engine;
 
 public class Camera : Component
 {
+    public static Camera Main => SceneManager.MainCamera;
+
     public enum CameraType
     {
         Perspective,
@@ -69,6 +71,14 @@ public class Camera : Component
             CameraType.Orthographic => Matrix4.CreateOrthographic(Size.X, Size.Y, MinDepth, MaxDepth),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    public void Render(params List<IDrawable> drawables)
+    {
+        foreach (var drawable in drawables)
+        {
+            drawable.Draw(this);
+        }
     }
 
     public void SetViewportSize(int width, int height)

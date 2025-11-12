@@ -28,14 +28,27 @@ public class Entity : IDisposable
     public virtual void Update()
     {
         if (!IsActive) return;
-        
-        foreach (var c in _components)
-            c.Update();
+
+        Component? currentComponent = null;
+        try
+        {
+            foreach (var c in _components)
+            {
+                currentComponent = c;
+                c.Update();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error Occured when Updating Component", currentComponent, "|", e.Message, '\n', e);
+        }
     }
 
     public virtual void Unload()
     {
-        foreach (var c in _components)
+        Component[] unloadComponents = new Component[_components.Count];
+        _components.CopyTo(unloadComponents);
+        foreach (var c in unloadComponents)
             c.Unload();
     }
 
@@ -50,7 +63,7 @@ public class Entity : IDisposable
     {
         foreach (var component in _components)
         {
-            if (component is T c)
+            if (component is T c && (includeDisabled || component.Enabled))
                 return c;
         }
 

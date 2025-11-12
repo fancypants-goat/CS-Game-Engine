@@ -123,6 +123,8 @@ public class Renderer : Component, IDrawable
 		    Texture?.Dispose();
 	    }
 	    
+	    SceneManager.ActiveScene.RemoveDrawable(this);
+	    
 	    _isDisposed = true;
     }
     

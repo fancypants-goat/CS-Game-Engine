@@ -50,7 +50,7 @@ public class Texture : IDisposable
             GL.TexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             GL.TexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
         }
-        
+        GL.BindTexture(TextureTarget.Texture2d, 0);
     }
 
     public void Use()
@@ -66,6 +66,7 @@ public class Texture : IDisposable
 
         if (disposing)
         {
+            GL.BindTexture(TextureTarget.Texture2d, 0);
             GL.DeleteTexture(Handle);
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace Engine;
 
-public interface IDrawable
+public interface IDrawable : IDisposable
 {
     public void Draw(Camera camera);
 }

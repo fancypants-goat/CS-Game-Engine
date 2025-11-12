@@ -3,6 +3,9 @@
 
 public class Component : IDisposable
 {
+
+    public bool Enabled;
+    
     public Entity Parent;
     public Transform Transform { get; }
 
