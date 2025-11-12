@@ -4,25 +4,41 @@ public class Scene(string name) : IDisposable
 {
     public readonly string Name = name;
     
-    private List<Entity> _rootEntities = [];
-    private List<IDrawable> _drawables = [];
+    public struct SceneState
+    {
+        public List<Entity> Entities;
+        public List<IDrawable> Drawables;
+
+        public void CopyTo(SceneState state)
+        {
+            state.Entities.Clear();
+            state.Entities.AddRange(Entities);
+            
+            state.Drawables.Clear();
+            state.Drawables.AddRange(Drawables);
+        }
+    }
+
+    private SceneState _currentState = new SceneState() { Entities = [], Drawables = [] };
+    private SceneState _defaultState = new SceneState() { Entities = [], Drawables = [] };
+
 
     private bool _isDisposed;
 
 
     public void AddEntity(Entity entity)
     {
-        _rootEntities.Add(entity);
+        _currentState.Entities.Add(entity);
     }
 
     public void RemoveEntity(Entity entity)
     {
-        _rootEntities.Remove(entity);
+        _currentState.Entities.Remove(entity);
     }
 
     public Entity GetEntity(int index)
     {
-        return _rootEntities[index];
+        return _currentState.Entities[index];
     }
 
     public void AddDrawable(Entity drawable)
@@ -30,12 +46,12 @@ public class Scene(string name) : IDisposable
         var renderer = drawable.GetComponent<Renderer>(true);
         
         if (renderer != null)
-            _drawables.Add(renderer);
+            _currentState.Drawables.Add(renderer);
     }
 
     public void AddDrawable<T>(T drawable) where T : IDrawable
     {
-        _drawables.Add(drawable);
+        _currentState.Drawables.Add(drawable);
     }
 
     public void RemoveDrawable(Entity drawable)
@@ -43,36 +59,58 @@ public class Scene(string name) : IDisposable
         var renderer = drawable.GetComponent<Renderer>(true);
         
         if (renderer != null)
-            _drawables.Remove(renderer);
+            _currentState.Drawables.Remove(renderer);
     }
 
     public void RemoveDrawable<T>(T drawable) where T : IDrawable
     {
-        _drawables.Remove(drawable);
+        _currentState.Drawables.Remove(drawable);
     }
 
     public IDrawable GetDrawable(int index)
     {
-        return _drawables[index];
+        return _currentState.Drawables[index];
     }
 
+    public void Initialize()
+    {
+        _currentState.CopyTo(_defaultState);
+    }
+
+    public void Reset()
+    {
+        _defaultState.CopyTo(_currentState);
+    }
+
+    public void EarlyUpdate()
+    {
+        try
+        {
+            foreach (var entity in _currentState.Entities)
+                entity.EarlyUpdate();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error Occured when EarlyUpdating Entity |", e.Message, '\n', e);
+        }
+    }
+    
     public void Update()
     {
         try
         {
-            foreach (var entity in _rootEntities)
+            foreach (var entity in _currentState.Entities)
                 entity.Update();
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error Occured when Updating Entity |", e.Message, '\n', e);
+            Debug.LogError("Error Occured when Updating Entity |", e.Message, '\n', e);
         }
     }
 
     public void Render()
     {
-        Debug.Log("Rendering scene", _drawables.Count);
-        SceneManager.MainCamera.Render(_drawables);
+        SceneManager.MainCamera.Render(_currentState.Drawables);
     }
 
 
@@ -82,14 +120,14 @@ public class Scene(string name) : IDisposable
 
         if (disposing)
         {
-            var entities = new Entity[_rootEntities.Count];
-            _rootEntities.CopyTo(entities);
+            var entities = new Entity[_currentState.Entities.Count];
+            _currentState.Entities.CopyTo(entities);
             foreach (var entity in entities)
                 entity.Dispose();
         }
 
-        _rootEntities.Clear();
-        _drawables.Clear();
+        _currentState.Entities.Clear();
+        _currentState.Drawables.Clear();
 
         SceneManager.ActivateScene(null);
         

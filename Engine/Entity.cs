@@ -25,6 +25,25 @@ public class Entity : IDisposable
             c.Load();
     }
 
+    public virtual void EarlyUpdate()
+    {
+        if (!IsActive) return;
+
+        Component? currentComponent = null;
+        try
+        {
+            foreach (var c in _components)
+            {
+                currentComponent = c;
+                c.EarlyUpdate();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error Occured when Updating Component", currentComponent, "|", e.Message, '\n', e);
+        }
+    }
+
     public virtual void Update()
     {
         if (!IsActive) return;

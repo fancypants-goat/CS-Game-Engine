@@ -60,6 +60,7 @@ public class Window : GameWindow
             scene.AddEntity(cube);
             scene.AddEntity(camera);
             scene.AddDrawable(r);
+            scene.Initialize();
         }
         catch (Exception ex)
         {
@@ -74,15 +75,9 @@ public class Window : GameWindow
 
         try
         {
-            SceneManager.ActiveScene.Update();
-            
-            if (KeyboardState.IsKeyDown(Keys.Escape))
-            {
-                Debug.LogPrefixed(Debug.LogType.Exit, "Exiting Due to Escape Press");
-                Close();
-            }
+            SceneManager.ActiveScene?.EarlyUpdate();
 
-            float speed = 3;
+            const float speed = 3;
             if (KeyboardState.IsKeyDown(Keys.W))
                 camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Forwards);
             if (KeyboardState.IsKeyDown(Keys.S))
@@ -93,18 +88,23 @@ public class Window : GameWindow
                 camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Right);
             if (KeyboardState.IsKeyDown(Keys.Space))
                 camera.Transform.Translate(speed * (float)args.Time, camera.Transform.Up);
+
             if (KeyboardState.IsKeyDown(Keys.LeftShift))
                 camera.Transform.Translate(speed * (float)args.Time, -camera.Transform.Up);
-
-            camera.Update();
 
 
             var x = (float)(args.Time * 300);
             var y = (float)(Math.Sqrt(args.Time) * 2f);
             var z = (float)(Math.Sin(args.Time) * 1);
             cube.Transform.Rotate(x, y, z);
-
-            cube.Update();
+            
+            SceneManager.ActiveScene?.Update();
+            
+            if (KeyboardState.IsKeyDown(Keys.Escape))
+            {
+                Debug.LogPrefixed(Debug.LogType.Exit, "Exiting Due to Escape Press");
+                Close();
+            }
         }
         catch (Exception ex)
         {
@@ -121,7 +121,7 @@ public class Window : GameWindow
 
         try
         {
-            SceneManager.ActiveScene.Render();
+            SceneManager.ActiveScene?.Render();
         }
         catch (Exception ex)
         {
@@ -137,6 +137,8 @@ public class Window : GameWindow
         base.OnFramebufferResize(e);
 
         GL.Viewport(0, 0, e.Width, e.Height);
+        
+        SceneManager.MainCamera.SetViewportSize(e.Width, e.Height);
     }
 
 
@@ -149,11 +151,11 @@ public class Window : GameWindow
             cube.Unload();
             camera.Unload();
 
-            Debug.Log("Disposing Objects");
+            Debug.LogInfo("Disposing Objects");
 
             SceneManager.ActiveScene.Dispose();
 
-            Debug.Log("Finished Disposing Objects");
+            Debug.LogInfo("Finished Disposing Objects");
         }
         catch (Exception ex)
         {

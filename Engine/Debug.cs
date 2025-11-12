@@ -47,12 +47,12 @@ public static class Debug
         LogPrefixed(typeStr, messages);
     }
 
-    public static void Log(params object[] messages)
+    public static void LogInfo(params object[] messages)
     {
         LogPrefixed(LogType.Info, messages);
     }
 
-    public static void LogDebug(params object[] messages)
+    public static void Log(params object[] messages)
     {
         LogPrefixed(LogType.Debug, messages);
     }

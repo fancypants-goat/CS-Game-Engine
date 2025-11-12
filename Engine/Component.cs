@@ -23,10 +23,13 @@ public class Component : IDisposable
     {
     }
 
-    public virtual void Update()
+    public virtual void EarlyUpdate()
     {
     }
 
+    public virtual void Update()
+    {
+    }
     public virtual void Unload()
     {
         Parent.RemoveComponent(this);
