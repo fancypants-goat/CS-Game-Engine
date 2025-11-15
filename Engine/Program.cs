@@ -29,7 +29,9 @@ public class Window : GameWindow
         GL.Enable(EnableCap.DepthTest);
         GL.DepthFunc(DepthFunction.Less);
 
-        Resources.GetSceneData("Scenes/Example.scene");
+        var scene = Scene.CreateFromData(Resources.GetSceneData("Scenes/Example.scene"));
+        Debug.Log(scene);
+        SceneManager.ActivateScene(scene, true);
 
         try
         {

@@ -29,6 +29,8 @@ public class Entity : IDisposable
     public virtual void EarlyUpdate()
     {
         if (!IsActive) return;
+        
+        Transform = GetComponent<Transform>(true);
 
         Component? currentComponent = null;
         try

@@ -11,8 +11,8 @@ namespace Engine;
 /// </summary>
 public struct Mesh : IDisposable
 {
-    private float[] _vertices;
-    public float[] Vertices
+    private Vertex[] _vertices;
+    public Vertex[] Vertices
     {
         get
         {
@@ -43,11 +43,11 @@ public struct Mesh : IDisposable
     public VertexBufferObject VertexBufferObject { get; private set; } = new();
     public ElementBufferObject ElementBufferObject { get; private set; }
     
-    public Submesh[] Submeshes { get; private set; }
+    public Submesh[] Submeshes { get; }
     
     private bool _isDisposed = false;
 
-    public Mesh(float[] vertices, uint[]? indices)
+    public Mesh(Vertex[] vertices, uint[]? indices)
     {
         _vertices = vertices;
 
@@ -61,6 +61,15 @@ public struct Mesh : IDisposable
             Submeshes = [new Submesh(0, indices.Length)];
         }
         else Submeshes = [];
+    }
+    public Mesh(Vertex[] vertices, Submesh[] submeshes)
+    {
+        _vertices = vertices;
+        
+        VertexArrayObject.Use();
+        VertexBufferObject.Upload(vertices, BufferUsage.StaticDraw);
+        
+        Submeshes = submeshes;
     }
 
     public void Use()

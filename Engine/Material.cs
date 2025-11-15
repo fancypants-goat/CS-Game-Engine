@@ -8,8 +8,12 @@ namespace Engine;
 public struct Material : IDisposable
 {
     public Shader Shader { get; set; }
-    public Color Color { get; set; }
     public Texture? Texture { get; set; }
+    public Color Color { get; set; } // ambient color
+    public Color DiffuseColor { get; set; }
+    public Color SpecularColor { get; set; }
+    public float SpecularExponent { get; set; }
+    
 
     private bool _isDisposed = false;
 

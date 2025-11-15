@@ -21,7 +21,9 @@ internal static class SceneLoader
     {
         var data = new SceneData
         {
-            Path = path
+            Path = path,
+            Entities = [],
+            Drawables = [],
         };
         
         // global scene data
@@ -42,15 +44,13 @@ internal static class SceneLoader
             var l = line.Trim();
             if (l.StartsWith('#') || string.IsNullOrWhiteSpace(l)) continue;
             
-            Debug.Log("Decoding line", i, ":", l);
-            
             // find the command and rest using RegEx
-            const string commandPattern = @"\A(?<command>\w+) \s* (?<rest>.*)";
+            const string commandPattern = @"\A(?<command>\w+) \s+ (?<rest>.*)";
             var match = Regex.Match(l, commandPattern, RegexOptions.IgnorePatternWhitespace);
             
             if (!match.Success)
             {
-                Debug.Log("Failed to decode line");
+                Debug.LogError("Failed to decode line");
                 continue;
             }
             
@@ -85,10 +85,8 @@ internal static class SceneLoader
                     
                     Parameter parentParameter = new Parameter(currentEntity, typeof(Entity));
                     List<Parameter> parameters = [parentParameter];
-                    for (int j = 1; j < args.Length; j++)
-                    {
-                        parameters.Add(DecodeParameter(args[j]));
-                    }
+                    
+                    parameters.AddRange(DecodeParameters(args));
                     var c = ComponentRegistry.Create(type, parameters);
 
                     if (type.IsSubclassOf(typeof(IDrawable)))
@@ -114,14 +112,14 @@ internal static class SceneLoader
         return v.Trim().Trim('"');
     }
 
-    private static Mesh DecodeMesh(string arg)
+    private static Mesh DecodeMesh(string arg, out Material[] materials)
     {
-        return (Mesh)Resources.GetMesh(DecodeString(arg));
+        return (Mesh)Resources.GetMesh(DecodeString(arg), out materials);
     }
 
     private static Texture DecodeTexture(params string[] args)
     {
-        string path = DecodeString(args[0]);
+        string path = Resources.GetPath(DecodeString(args[0]));
         bool enabled = args.Length > 1 && bool.TryParse(args[1], out bool b) ? b : true;
         return new Texture(path, enabled);
     }
@@ -148,46 +146,87 @@ internal static class SceneLoader
 
         return parts.Length switch
         {
-            1 => new Vector3(parts[0], 0, 0),
+            1 => new Vector3(parts[0]),
             3 => new Vector3(parts[0], parts[1], parts[2]),
             _ => throw new ArgumentException($"vec3 must have 1 or 3 values: {arg}")
+        };
+    }
+
+    private static Vector2 DecodeVector2(string arg)
+    {
+        // Expecting: vec2(x), vec2(x, y)
+        var match = Regex.Match(arg, @"vec2\(([^)]*)\)");
+        if (!match.Success)
+            throw new ArgumentException($"Invalid vec2 format: {arg}");
+
+        var parts = match.Groups[1].Value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => float.Parse(p.Trim()))
+            .ToArray();
+
+        return parts.Length switch
+        {
+            1 => new Vector2(parts[0]),
+            2 => new Vector2(parts[0], parts[1]),
+            _ => throw new ArgumentException($"vec3 must have 1 or 2 values: {arg}")
         };
     }
 
     // --------------------------
     // Main parameter decoder
     // --------------------------
-    public static Parameter DecodeParameter(string v)
+    public static Parameter[] DecodeParameters(string[] values)
     {
-        v = v.Trim();
-
-        // String literal
-        if (v.StartsWith('"') && v.EndsWith('"'))
-            return new Parameter(DecodeString(v), typeof(string));
-
-        // Integer literal
-        if (int.TryParse(v, out int i))
-            return new Parameter(i, typeof(int));
-
-        // Function-style argument: mesh(...), texture(...), shader(...), vec3(...)
-        var match = Regex.Match(v, @"(?<name>\w+)\((?<args>[^\)]*)\)");
-        if (match.Success)
+        List<Parameter> parameters = [];
+        
+        foreach (var value in values)
         {
-            string name = match.Groups["name"].Value;
-            string[] args = match.Groups["args"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(a => a.Trim()).ToArray();
+            var v = value.Trim();
 
-            return name switch
+            // String literal
+            if (v.StartsWith('"') && v.EndsWith('"'))
+                parameters.Add(new Parameter(DecodeString(v), typeof(string)));
+
+            // Single literal
+            else if (value.Contains('.') && float.TryParse(v, out float f))
+                    parameters.Add(new Parameter(f, typeof(float)));
+            // Integer literal
+            else if (int.TryParse(v, out int i))
+                parameters.Add(new Parameter(i, typeof(int)));
+            else
             {
-                "mesh" => new Parameter(DecodeMesh(args[0]), typeof(Mesh)),
-                "texture" => new Parameter(DecodeTexture(args), typeof(Texture)),
-                "shader" => new Parameter(DecodeShader(args), typeof(Shader)),
-                "vec3" => new Parameter(DecodeVector3(v), typeof(Vector3)),
-                _ => new Parameter("", typeof(string)) // fallback for unknown
-            };
-        }
+                // Function-style argument: mesh(...), texture(...), shader(...), vec3(...)
+                var match = Regex.Match(v, @"(?<name>\w+)\((?<args>[^\)]*)\)");
+                if (match.Success)
+                {
+                    string name = match.Groups["name"].Value;
+                    string[] args = match.Groups["args"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(a => a.Trim()).ToArray();
 
-        Debug.LogError($"Unknown parameter format: {v}");
-        return new Parameter("", typeof(string));
+                    switch (name)
+                    {
+                        case "mesh":
+                            var mesh = DecodeMesh(args[0], out var materials);
+                            parameters.Add(new Parameter(mesh, typeof(Mesh)));
+                            parameters.Add(new Parameter(materials, typeof(Material[])));
+                            break;
+                        case "texture":
+                            parameters.Add(new Parameter(DecodeTexture(args), typeof(Texture)));
+                            break;
+                        case "shader":
+                            parameters.Add(new Parameter(DecodeShader(args), typeof(Shader)));
+                            break;
+                        case "vec3":
+                            parameters.Add(new Parameter(DecodeVector3(v), typeof(Vector3)));
+                            break;
+                        case "vec2":
+                            parameters.Add(new Parameter(DecodeVector2(v), typeof(Vector2)));
+                            break;
+                    }
+                }
+            }
+        }
+        
+        return parameters.ToArray();
     }
 }

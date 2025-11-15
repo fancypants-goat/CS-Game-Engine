@@ -3,11 +3,11 @@ camera Main
 
 entity Cube
 add Transform vec3(0) vec3(1) vec3(1, 2, 5)
-add Renderer mesh(Objects/cube.obj) shader(default) texture("Textures/wall picture.jpg", true)
+add Renderer mesh(Objects/cube.obj) shader(default) texture("Textures/wall.jpg", true)
 
 
 entity Main
 # comment
 add Transform vec3(0, 0, -5) vec3(0) vec3(0)
 # vv == add Camera Perspective 0.1 100 90
-add Camera 0 0.1 100 90
+add Camera 0 0.1 100. 90. vec2(0)

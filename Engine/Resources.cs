@@ -24,8 +24,9 @@ public static class Resources
     }
 
 
-    public static Mesh? GetMesh(string path)
+    public static Mesh? GetMesh(string path, out Material[] materials)
     {
+        materials = [];
         path = GetPath(path); // make sure 'path' is a global path
 
         if (!File.Exists(path))
@@ -34,7 +35,7 @@ public static class Resources
             return null;
         }
 
-        throw new NotImplementedException("Mesh Loading from File is not yet implemented.");
+        return MeshLoader.LoadMesh(path, out materials);
     }
 
 

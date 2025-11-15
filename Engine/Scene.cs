@@ -32,7 +32,7 @@ public class Scene : IDisposable
         return scene;
     }
 
-    public Scene(string name)
+    internal Scene(string name)
     {
         Name = name;
     }

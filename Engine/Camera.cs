@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
@@ -61,14 +62,14 @@ public class Camera : Component
         Fovy = fovy;
         Size = size ?? Vector2.One;
     }
-    public Camera(Entity parent, int cameraType, float minDepth, float maxDepth, float fovy = 90.0f, Vector2? size = null)
+    public Camera(Entity parent, int cameraType, float minDepth, float maxDepth, float fovy, Vector2 size)
         : base(parent)
     {
         Type = (CameraType)cameraType;
         MinDepth = minDepth;
         MaxDepth = maxDepth;
         Fovy = fovy;
-        Size = size ?? Vector2.One;
+        Size = size;
     }
 
     public override void Update()

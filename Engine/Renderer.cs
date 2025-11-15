@@ -1,6 +1,7 @@
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics.Vulkan;
+using OpenTK.Mathematics;
 
 namespace Engine;
 
@@ -11,43 +12,57 @@ public class Renderer : Component, IDrawable
 	// TODO Add a RendererType distinction later (MeshRenderer, SkinnedMeshRenderer, SpriteRenderer, etc.).
 	// TODO Add batching logic later based on shared Mesh and Material.
 	
-	private static float[] cubeVertices = [
-		// Front face
-		-0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   0.0f,  0.0f,  1.0f, // Bottom-left
-		 0.5f, -0.5f,  0.5f,   1.0f, 0.0f,   0.0f,  0.0f,  1.0f, // Bottom-right
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   0.0f,  0.0f,  1.0f, // Top-right
-		-0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   0.0f,  0.0f,  1.0f, // Top-left
-		
-		// Back face
-		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   0.0f,  0.0f, -1.0f, // Bottom-left
-		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   0.0f,  0.0f, -1.0f, // Bottom-right
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   0.0f,  0.0f, -1.0f, // Top-right
-		 0.5f,  0.5f, -0.5f,   0.0f, 1.0f,   0.0f,  0.0f, -1.0f, // Top-left
-		
-		// Left face
-		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,  -1.0f,  0.0f,  0.0f, // Bottom-left
-		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f,  -1.0f,  0.0f,  0.0f, // Bottom-right
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,  -1.0f,  0.0f,  0.0f, // Top-right
-		-0.5f,  0.5f, -0.5f,   0.0f, 1.0f,  -1.0f,  0.0f,  0.0f, // Top-left
-		
-		// Right face
-		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   1.0f,  0.0f,  0.0f, // Bottom-left
-		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   1.0f,  0.0f,  0.0f, // Bottom-right
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   1.0f,  0.0f,  0.0f, // Top-right
-		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   1.0f,  0.0f,  0.0f, // Top-left
-		
-		// Bottom face (y = -0.5)
-		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   0.0f, -1.0f,  0.0f, // Back-left
-		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   0.0f, -1.0f,  0.0f, // Back-right
-		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f,   0.0f, -1.0f,  0.0f, // Front-right
-		-0.5f, -0.5f,  0.5f,   0.0f, 1.0f,   0.0f, -1.0f,  0.0f, // Front-left
-		
-		// Top face (y = +0.5)
-		-0.5f,  0.5f,  0.5f,   0.0f, 0.0f,   0.0f,  1.0f,  0.0f, // Front-left
-		 0.5f,  0.5f,  0.5f,   1.0f, 0.0f,   0.0f,  1.0f,  0.0f, // Front-right
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   0.0f,  1.0f,  0.0f, // Back-right
-		-0.5f,  0.5f, -0.5f,   0.0f, 1.0f,   0.0f,  1.0f,  0.0f  // Back-left
-	];
+	private static readonly Vertex[] cubeVertices =
+	{
+	    // ─────────────────────────────
+	    // FRONT
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(0f, 0f, 1f) },
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(0f, 0f, 1f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(0f, 0f, 1f) },
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(0f, 0f, 1f) },
+
+	    // ─────────────────────────────
+	    // BACK
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(0f, 0f, -1f) },
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(0f, 0f, -1f) },
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(0f, 0f, -1f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(0f, 0f, -1f) },
+
+	    // ─────────────────────────────
+	    // LEFT
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(-1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(-1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(-1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(-1f, 0f, 0f) },
+
+	    // ─────────────────────────────
+	    // RIGHT
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(1f, 0f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(1f, 0f, 0f) },
+
+	    // ─────────────────────────────
+	    // BOTTOM
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(0f, -1f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(0f, -1f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(0f, -1f, 0f) },
+	    new Vertex { Position = new Vector3(-0.5f, -0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(0f, -1f, 0f) },
+
+	    // ─────────────────────────────
+	    // TOP
+	    // ─────────────────────────────
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(0.0f, 0.0f), Normal = new Vector3(0f, 1f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f,  0.5f), TextureCoordinate = new Vector2(1.0f, 0.0f), Normal = new Vector3(0f, 1f, 0f) },
+	    new Vertex { Position = new Vector3( 0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(1.0f, 1.0f), Normal = new Vector3(0f, 1f, 0f) },
+	    new Vertex { Position = new Vector3(-0.5f,  0.5f, -0.5f), TextureCoordinate = new Vector2(0.0f, 1.0f), Normal = new Vector3(0f, 1f, 0f) }
+	};
+
 
 
     private static uint[] cubeIndices = [
@@ -106,6 +121,27 @@ public class Renderer : Component, IDrawable
     public Renderer(Entity parent, Mesh mesh, Material[] materials) : base(parent)
     {
 	    Materials = materials;
+	    Mesh = mesh;
+    }
+
+    public Renderer(Entity parent, Mesh mesh, Material[] materials, Shader shader, Texture texture) : base(parent)
+    {
+	    Materials = materials;
+	    for (int i = 0; i < materials.Length; i++)
+	    {
+		    materials[i].Shader = shader;
+		    materials[i].Texture = texture;
+	    }
+	    Mesh = mesh;
+    }
+
+    public Renderer(Entity parent, Mesh mesh, Material[] materials, Shader shader) : base(parent)
+    {
+	    Materials = materials;
+	    for (int i = 0; i < materials.Length; i++)
+	    {
+		    materials[i].Shader = shader;
+	    }
 	    Mesh = mesh;
     }
 	
