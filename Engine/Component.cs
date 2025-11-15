@@ -1,21 +1,14 @@
 ﻿namespace Engine;
 
-
-public class Component : IDisposable
+[ComponentMeta("Component")]
+public class Component(Entity parent) : IDisposable
 {
-
-    public bool Enabled;
+    public bool Enabled = true;
     
-    public Entity Parent;
-    public Transform Transform { get; }
+    public Entity Parent = parent;
+    public Transform Transform { get; } = parent.Transform;
 
-    protected bool _isDisposed = false;
-
-    public Component(Entity parent)
-    {
-        this.Parent = parent;
-        Transform = parent.Transform;
-    }
+    protected bool IsDisposed = false;
     
     
 
@@ -44,10 +37,10 @@ public class Component : IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
     }
-
+    
     ~Component()
     {
-        if (_isDisposed) return;
+        if (IsDisposed) return;
         
         Debug.LogMemLeak("Component");
         Dispose(false);

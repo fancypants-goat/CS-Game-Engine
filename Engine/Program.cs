@@ -11,10 +11,6 @@ namespace Engine;
 
 public class Window : GameWindow
 {
-    private Scene scene1;
-    private Scene scene2;
-    private Entity cube;
-    
     public Window(int width, int height, string title)
         : base(GameWindowSettings.Default, new NativeWindowSettings
         {
@@ -33,49 +29,11 @@ public class Window : GameWindow
         GL.Enable(EnableCap.DepthTest);
         GL.DepthFunc(DepthFunction.Less);
 
+        Resources.GetSceneData("Scenes/Example.scene");
+
         try
         {
-            var shader = Resources.GetShader("default");
-            var texture = new Texture(Resources.GetPath("Textures/wall.jpg"), true);
-
-            // Scene 1
-            scene1 = new Scene("Scene 1");
-
-            cube = new Entity();
-            var r = new Renderer(cube, shader, texture, null);
-            cube.AddComponent(r);
-
-            var camera = new Entity();
-            var c = new Camera(camera, Camera.CameraType.Perspective, 0.1f, 100f, fovy: 90f);
-            camera.AddComponent(c);
-            c.SetViewportSize(ClientSize.X, ClientSize.Y);
             
-            scene1.AddEntity(cube);
-            scene1.AddEntity(camera);
-            scene1.AddDrawable(r);
-            scene1.ActiveCamera = c;
-            scene1.Initialize();
-            
-            // Scene 2
-            scene2 = new Scene("Scene 2");
-            
-            var cube2 = new Entity();
-            cube2.Transform.Translate(0, 0, 5);
-            var r2 = new Renderer(cube2, shader, null, Color.DarkGreen);
-            cube2.AddComponent(r2);
-            
-            var camera2 = new Entity();
-            var c2 = new Camera(camera2, Camera.CameraType.Perspective, 0.1f, 100, fovy: 30);
-            camera2.AddComponent(c2);
-            c2.SetViewportSize(ClientSize.X, ClientSize.Y);
-            
-            scene2.AddEntity(cube2);
-            scene2.AddEntity(camera2);
-            scene2.AddDrawable(r2);
-            scene2.ActiveCamera = c2;
-            scene2.Initialize();
-            
-            SceneManager.ActivateScene(scene1);
         }
         catch (Exception ex)
         {
@@ -120,24 +78,6 @@ public class Window : GameWindow
                 Debug.LogPrefixed(Debug.LogType.Exit, "Exiting Due to Escape Press");
                 Close();
             }
-
-            if (KeyboardState.IsKeyPressed(Keys.Tab))
-            {
-                Debug.LogInfo("Switching scene!!");
-                switch (SceneManager.ActiveScene?.Name)
-                {
-                    case "Scene 1":
-                        SceneManager.ActivateScene(scene2);
-                        break;
-                    case "Scene 2":
-                        SceneManager.ActivateScene(scene1);
-                        break;
-                }
-                
-                SceneManager.ActiveCamera.SetViewportSize(ClientSize.X, ClientSize.Y);
-            }
-            
-            cube.Transform.Translate(0, 0, 2 * (float)args.Time);
         }
         catch (Exception ex)
         {
@@ -183,7 +123,7 @@ public class Window : GameWindow
         {
             Debug.LogInfo("Disposing Objects");
 
-            SceneManager.ActiveScene.Dispose();
+            // SceneManager.ActiveScene.Dispose();
 
             Debug.LogInfo("Finished Disposing Objects");
         }

@@ -14,18 +14,13 @@ public static class Resources
 
     public static Scene GetScene(string path)
     {
-        var data = SceneLoader.LoadSceneData(path);
+        var data = GetSceneData(path);
         return Scene.CreateFromData(data);
     }
 
     public static SceneData GetSceneData(string path)
     {
-        return SceneLoader.LoadSceneData(path);
-    }
-
-    public static void WriteSceneData(SceneData data)
-    {
-        SceneLoader.WriteSceneData(data);
+        return SceneLoader.LoadSceneData(GetPath(path));
     }
 
 

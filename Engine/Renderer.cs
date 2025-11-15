@@ -4,6 +4,7 @@ using OpenTK.Graphics.Vulkan;
 
 namespace Engine;
 
+[ComponentMeta("Renderer")]
 public class Renderer : Component, IDrawable
 {
 	// TODO Add a MaterialPropertyBlock system (like Unity) so multiple renderers can share a material but override a few properties (e.g., color).
@@ -57,9 +58,11 @@ public class Renderer : Component, IDrawable
 		16, 17, 18, 18, 19, 16, // Bottom
 		20, 21, 22, 22, 23, 20 // Top
     ];
-	
+    
+    
     public Material[] Materials { get; set; }
     public Mesh Mesh { get; set; }
+    
 
     public Renderer(Entity parent) : base(parent) // default constructor
     {
@@ -129,7 +132,7 @@ public class Renderer : Component, IDrawable
 
     protected override void Dispose(bool disposing)
     {
-	    if (_isDisposed) return;
+	    if (IsDisposed) return;
 	    
 	    if (disposing)
 	    {
@@ -139,12 +142,12 @@ public class Renderer : Component, IDrawable
 		    Mesh.Dispose();
 	    }
 	    
-	    _isDisposed = true;
+	    IsDisposed = true;
     }
 
     ~Renderer()
     {
-	    if (_isDisposed) return;
+	    if (IsDisposed) return;
 	    
 	    Debug.LogMemLeak("Renderer");
 	    Dispose(false);

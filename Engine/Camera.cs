@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
+[ComponentMeta("Camera")]
 public class Camera : Component
 {
     public static Camera Main => SceneManager.ActiveCamera;
@@ -51,9 +52,19 @@ public class Camera : Component
         MinDepth = 1f;
     }
 
-    public Camera(Entity parent, CameraType cameraType, float minDepth, float maxDepth, float fovy = 90.0f, Vector2? size = null) : base(parent)
+    public Camera(Entity parent, CameraType cameraType, float minDepth, float maxDepth, float fovy = 90.0f, Vector2? size = null)
+        : base(parent)
     {
         Type = cameraType;
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+        Fovy = fovy;
+        Size = size ?? Vector2.One;
+    }
+    public Camera(Entity parent, int cameraType, float minDepth, float maxDepth, float fovy = 90.0f, Vector2? size = null)
+        : base(parent)
+    {
+        Type = (CameraType)cameraType;
         MinDepth = minDepth;
         MaxDepth = maxDepth;
         Fovy = fovy;

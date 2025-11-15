@@ -6,16 +6,17 @@ public class Entity : IDisposable
 {
     public bool IsActive = true;
 
+    public readonly string Id;
+
     public Transform Transform;
 
-    protected List<Component> _components;
+    protected List<Component> _components = [];
 
     protected bool _isDisposed = false;
 
-    public Entity()
+    public Entity(string id)
     {
-        Transform = new Transform(this);
-        _components = [Transform];
+        Id = id;
     }
 
 
@@ -87,6 +88,14 @@ public class Entity : IDisposable
         }
 
         return null;
+    }
+
+    public Component[] GetComponents(bool includeDisabled = false)
+    {
+        if (includeDisabled)
+            return _components.ToArray();
+        
+        return _components.Where(component => component.Enabled).ToArray();
     }
 
     public void RemoveComponent(Component component)

@@ -89,18 +89,6 @@ public class Scene : IDisposable
     /// Should only be called when creating a scene from code after all initial entities have been added.<br/>
     /// This method writes the scene's current data to a .scene file in the Temp/Scenes folder to allow resetting this scene.
     /// </summary>
-    public void Initialize()
-    {
-        _path = Resources.GetPath("Temp", "Scenes", Name + ".scene");
-        var data = new SceneData() {
-            Name = Name,
-            Path = _path,
-            Entities = _entities,
-            Drawables = _drawables,
-            ActiveCamera = ActiveCamera
-        };
-        Resources.WriteSceneData(data);
-    }
 
     public void Reset()
     {

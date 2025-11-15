@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
+[ComponentMeta("Transform")]
 public class Transform : Component
 {
     private Vector3 _position;
